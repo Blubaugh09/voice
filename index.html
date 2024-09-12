@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bible Voice Recognition</title>
   <style>
     #status {
@@ -29,13 +28,34 @@
       margin-left: 10px;
       font-weight: bold;
     }
+    #stopBtn {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      display: none; /* Hidden by default */
+    }
+    #startBtn {
+      background-color: green;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>Bible Voice Recognition</h1>
 
-  <button id="startBtn">Start Listening</button>
-  <p id="status">Click the button to start and say a Bible reference like "Genesis chapter 1 verse 23".</p>
+  <button id="startBtn">Start Listening now</button>
+  <button id="stopBtn">Stop Listening</button>
+  
+  <p id="status">Click the start button to begin.</p>
   <div id="micIcon">🎤</div>
 
   <div id="output">
@@ -47,6 +67,7 @@
 
   <script>
     const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
     const micIcon = document.getElementById('micIcon');
     const output = document.getElementById('output');
     const status = document.getElementById('status');
@@ -84,7 +105,7 @@
     const recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
 
-    // Enable continuous recognition and restart after each result
+    // Enable continuous recognition
     recognition.continuous = true;
     recognition.interimResults = false;
 
@@ -145,17 +166,21 @@
       log.textContent = `Error: ${event.error}`;
     };
 
-    // Start speech recognition when button is clicked
+    // Start speech recognition when the "Start Listening" button is clicked
     startBtn.addEventListener('click', () => {
       recognition.start();
       log.textContent = 'Listening continuously for Bible references...';
+      startBtn.style.display = 'none';  // Hide start button
+      stopBtn.style.display = 'block';  // Show stop button
     });
 
-    // Restart recognition after each speech result
-    recognition.onend = () => {
-      recognition.start(); // Automatically restart listening
-    };
-
+    // Stop speech recognition when the "Stop Listening" button is clicked
+    stopBtn.addEventListener('click', () => {
+      recognition.stop();
+      log.textContent = 'Stopped listening.';
+      stopBtn.style.display = 'none';   // Hide stop button
+      startBtn.style.display = 'block'; // Show start button
+    });
   </script>
 </body>
 </html>
