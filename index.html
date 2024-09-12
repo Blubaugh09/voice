@@ -23,8 +23,8 @@
 <body>
   <h1>Bible Voice Recognition</h1>
   
-  <button id="voiceBtn">Speak Bible Reference</button>
-  <p id="status">Click the button and say: "Genesis 1 35" or "Genesis one hundred and thirty-five 2"</p>
+  <button id="voiceBtn">Speak Bible Reference7</button>
+  <p id="status">Click the button and say: "Genesis 23 verse 22" or "Genesis chapter 23 verse 22"</p>
   <p id="output"></p>
   <p id="log"></p>
 
@@ -41,17 +41,11 @@
       "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, 
       "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18, 
       "nineteen": 19, "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, 
-      "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
-      "hundred": 100
+      "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90
     };
 
     // Helper function to convert number words to digits
     function convertNumberWordsToDigits(input) {
-      // Convert explicit "one hundred thirty-five" into numbers
-      input = input.replace(/(\w+)\s+hundred(?:\s+and)?\s+(\w+)/g, (match, num1, num2) => {
-        return (numberWords[num1] * 100 + numberWords[num2]);
-      });
-
       return input.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\b/g, match => numberWords[match]);
     }
 
@@ -83,8 +77,8 @@
       transcript = convertNumberWordsToDigits(transcript);
       console.log('Recognized text after conversion:', transcript);
 
-      // Updated regex pattern to capture "book chapter verse"
-      const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation)\s(\d+)\s(\d+)/;
+      // Updated regex pattern to capture both "book X verse Y" and "book chapter X verse Y"
+      const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation)\s(?:chapter\s)?(\d+)\sverse\s(\d+)/;
 
       const match = transcript.match(bibleRegex);
 
