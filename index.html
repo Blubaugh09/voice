@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bible Voice Recognition2</title>
+  <title>Bible Voice Recognition3</title>
   <style>
     #status {
       margin-top: 20px;
@@ -21,10 +21,10 @@
   </style>
 </head>
 <body>
-  <h1>Bible Voice Recognition</h1>
+  <h1>Bible Voice Recognition3</h1>
   
-  <button id="voiceBtn">Speak Bible Reference2</button>
-  <p id="status">Click the button and say: "Genesis chapter 1 verse 1"</p>
+  <button id="voiceBtn">Speak Bible Reference3</button>
+  <p id="status">Click the button and say: "Genesis 23 verse 22"</p>
   <p id="output"></p>
   <p id="log"></p>
 
@@ -77,9 +77,9 @@
       transcript = convertNumberWordsToDigits(transcript);
       console.log('Recognized text after conversion:', transcript);
 
-      // Full regex pattern to capture "book chapter X verse Y"
-      const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation) chapter (\d+) verse (\d+)/;
-      
+      // Updated regex pattern to capture "book X verse Y" without the word 'chapter'
+      const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation)\s(\d+)\sverse\s(\d+)/;
+
       const match = transcript.match(bibleRegex);
 
       if (match) {
