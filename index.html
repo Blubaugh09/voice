@@ -18,21 +18,50 @@
       color: red;
       font-weight: bold;
     }
+    #micIcon {
+      display: none;
+      font-size: 30px;
+      color: red;
+    }
+    .checkmark {
+      display: inline-block;
+      color: green;
+      margin-left: 10px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>Bible Voice Recognition</h1>
-  
-  <button id="startBtn">Start Listening always listenening "Hey Scripture"</button>
-  <p id="status">Click the button and say: "Genesis 23 verse 22" or "Genesis chapter 23 verse 22"</p>
-  <p id="output"></p>
+
+  <button id="startBtn">Start Listening</button>
+  <p id="status">Click the button to start, then say "Hey Bible" followed by a Bible reference.</p>
+  <div id="micIcon">🎤</div>
+
+  <div id="output">
+    <div>Book: <span id="book"></span> <span id="bookCheck" class="checkmark">✔️</span></div>
+    <div>Chapter: <span id="chapter"></span> <span id="chapterCheck" class="checkmark">✔️</span></div>
+    <div>Verse: <span id="verse"></span> <span id="verseCheck" class="checkmark">✔️</span></div>
+  </div>
   <p id="log"></p>
 
   <script>
     const startBtn = document.getElementById('startBtn');
+    const micIcon = document.getElementById('micIcon');
     const output = document.getElementById('output');
     const status = document.getElementById('status');
     const log = document.getElementById('log');
+    const bookElement = document.getElementById('book');
+    const chapterElement = document.getElementById('chapter');
+    const verseElement = document.getElementById('verse');
+    const bookCheck = document.getElementById('bookCheck');
+    const chapterCheck = document.getElementById('chapterCheck');
+    const verseCheck = document.getElementById('verseCheck');
+
+    // Initially hide checkmarks
+    bookCheck.style.display = 'none';
+    chapterCheck.style.display = 'none';
+    verseCheck.style.display = 'none';
 
     // Number words mapping
     const numberWords = {
@@ -54,50 +83,68 @@
     const recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
 
-    // Enable continuous recognition and interim results
+    // Continuous but stop for 'hey bible'
     recognition.continuous = true;
     recognition.interimResults = false;
 
-    // Start recording and show status
+    // Show mic icon when recording
     recognition.onstart = () => {
-      status.textContent = "Listening... please say a Bible reference.";
+      micIcon.style.display = 'block';
+      status.textContent = "Listening... please say 'Hey Bible' followed by a Bible reference.";
       status.classList.add('listening');
-      log.textContent = "Recording started...";
+    };
+
+    // Hide mic icon when recording stops
+    recognition.onspeechend = () => {
+      micIcon.style.display = 'none';
+      status.textContent = "Processing speech...";
+      status.classList.remove('listening');
     };
 
     // Process the speech result
-recognition.onresult = (event) => {
-  let transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
-  log.textContent = `Recognized speech: "${transcript}"`;
+    recognition.onresult = (event) => {
+      let transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+      log.textContent = `Recognized speech: "${transcript}"`;
 
-  // Check if the transcript starts with the wake word "hey bible"
-  if (transcript.startsWith('hey bible')) {
-    transcript = transcript.replace('hey scripture', '').trim(); // Remove the wake word
-    // Convert number words to digits
-    transcript = convertNumberWordsToDigits(transcript);
-    console.log('Recognized text after conversion:', transcript);
+      // Check if the user said "Hey Bible"
+      if (transcript.startsWith("hey bible")) {
+        transcript = transcript.replace("hey bible", "").trim(); // Remove the wake word
 
-    // Regex pattern to capture both "book X verse Y" and "book chapter X verse Y"
-    const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation)\s(?:chapter\s)?(\d+)\sverse\s(\d+)/;
+        // Convert number words to digits
+        transcript = convertNumberWordsToDigits(transcript);
+        console.log('Recognized text after conversion:', transcript);
 
-    const match = transcript.match(bibleRegex);
+        // Regex pattern to capture both "book X verse Y" and "book chapter X verse Y"
+        const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation)\s(?:chapter\s)?(\d+)\sverse\s(\d+)/;
 
-    if (match) {
-      const book = match[1];
-      const chapter = match[2];
-      const verse = match[3];
-      
-      // Log book, chapter, and verse to the console
-      console.log(`Book: ${book}, Chapter: ${chapter}, Verse: ${verse}`);
-      output.textContent = `Book: ${book}, Chapter: ${chapter}, Verse: ${verse}`;
-      log.textContent += " - Successfully matched Bible reference!";
-    } else {
-      output.textContent = "Could not recognize the Bible reference. Please try again.";
-      log.textContent += " - No match found. Please try again.";
-    }
-  }
-};
+        const match = transcript.match(bibleRegex);
 
+        if (match) {
+          const book = match[1];
+          const chapter = match[2];
+          const verse = match[3];
+          
+          // Update the UI with the confirmed book, chapter, and verse
+          bookElement.textContent = book;
+          chapterElement.textContent = chapter;
+          verseElement.textContent = verse;
+
+          // Show checkmarks for confirmation
+          bookCheck.style.display = 'inline-block';
+          chapterCheck.style.display = 'inline-block';
+          verseCheck.style.display = 'inline-block';
+
+          // Log book, chapter, and verse to the console
+          console.log(`Book: ${book}, Chapter: ${chapter}, Verse: ${verse}`);
+          log.textContent += " - Successfully matched Bible reference!";
+          
+          // Turn off listening until "Hey Bible" is heard again
+          recognition.stop();
+        } else {
+          log.textContent += " - No match found. Please try again.";
+        }
+      }
+    };
 
     // Handle errors during recognition
     recognition.onerror = (event) => {
@@ -108,8 +155,9 @@ recognition.onresult = (event) => {
     // Start speech recognition when button is clicked
     startBtn.addEventListener('click', () => {
       recognition.start();
-      log.textContent = 'Listening continuously for Bible references...';
+      log.textContent = 'Listening for "Hey Bible"...';
     });
   </script>
 </body>
 </html>
+
