@@ -35,7 +35,7 @@
   <h1>Bible Voice Recognition</h1>
 
   <button id="startBtn">Start Listening</button>
-  <p id="status">Click the button to start, then say "Hey Bible" followed by a Bible reference.</p>
+  <p id="status">Click the button to start and say a Bible reference like "Genesis chapter 1 verse 23".</p>
   <div id="micIcon">🎤</div>
 
   <div id="output">
@@ -75,7 +75,8 @@
 
     // Helper function to convert number words to digits
     function convertNumberWordsToDigits(input) {
-      return input.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\b/g, match => numberWords[match]);
+      return input.replace(/\bone\b/g, '1') // Direct replacement for "one"
+        .replace(/\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\b/g, match => numberWords[match]);
     }
 
     // Check if browser supports speech recognition
@@ -83,14 +84,14 @@
     const recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
 
-    // Continuous but stop for 'hey bible'
+    // Enable continuous recognition and restart after each result
     recognition.continuous = true;
     recognition.interimResults = false;
 
     // Show mic icon when recording
     recognition.onstart = () => {
       micIcon.style.display = 'block';
-      status.textContent = "Listening... please say 'Hey Bible' followed by a Bible reference.";
+      status.textContent = "Listening... please say a Bible reference.";
       status.classList.add('listening');
     };
 
@@ -106,43 +107,35 @@
       let transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
       log.textContent = `Recognized speech: "${transcript}"`;
 
-      // Check if the user said "Hey Bible"
-      if (transcript.startsWith("hey bible")) {
-        transcript = transcript.replace("hey bible", "").trim(); // Remove the wake word
+      // Convert number words to digits
+      transcript = convertNumberWordsToDigits(transcript);
+      console.log('Recognized text after conversion:', transcript);
 
-        // Convert number words to digits
-        transcript = convertNumberWordsToDigits(transcript);
-        console.log('Recognized text after conversion:', transcript);
+      // Regex pattern to capture both "book X verse Y" and "book chapter X verse Y"
+      const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation)\s(?:chapter\s)?(\d+)\sverse\s(\d+)/;
 
-        // Regex pattern to capture both "book X verse Y" and "book chapter X verse Y"
-        const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation)\s(?:chapter\s)?(\d+)\sverse\s(\d+)/;
+      const match = transcript.match(bibleRegex);
 
-        const match = transcript.match(bibleRegex);
+      if (match) {
+        const book = match[1];
+        const chapter = match[2];
+        const verse = match[3];
+        
+        // Update the UI with the confirmed book, chapter, and verse
+        bookElement.textContent = book;
+        chapterElement.textContent = chapter;
+        verseElement.textContent = verse;
 
-        if (match) {
-          const book = match[1];
-          const chapter = match[2];
-          const verse = match[3];
-          
-          // Update the UI with the confirmed book, chapter, and verse
-          bookElement.textContent = book;
-          chapterElement.textContent = chapter;
-          verseElement.textContent = verse;
+        // Show checkmarks for confirmation
+        bookCheck.style.display = 'inline-block';
+        chapterCheck.style.display = 'inline-block';
+        verseCheck.style.display = 'inline-block';
 
-          // Show checkmarks for confirmation
-          bookCheck.style.display = 'inline-block';
-          chapterCheck.style.display = 'inline-block';
-          verseCheck.style.display = 'inline-block';
-
-          // Log book, chapter, and verse to the console
-          console.log(`Book: ${book}, Chapter: ${chapter}, Verse: ${verse}`);
-          log.textContent += " - Successfully matched Bible reference!";
-          
-          // Turn off listening until "Hey Bible" is heard again
-          recognition.stop();
-        } else {
-          log.textContent += " - No match found. Please try again.";
-        }
+        // Log book, chapter, and verse to the console
+        console.log(`Book: ${book}, Chapter: ${chapter}, Verse: ${verse}`);
+        log.textContent += " - Successfully matched Bible reference!";
+      } else {
+        log.textContent += " - No match found. Please try again.";
       }
     };
 
@@ -155,9 +148,14 @@
     // Start speech recognition when button is clicked
     startBtn.addEventListener('click', () => {
       recognition.start();
-      log.textContent = 'Listening for "Hey Bible"...';
+      log.textContent = 'Listening continuously for Bible references...';
     });
+
+    // Restart recognition after each speech result
+    recognition.onend = () => {
+      recognition.start(); // Automatically restart listening
+    };
+
   </script>
 </body>
 </html>
-
