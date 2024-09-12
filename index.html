@@ -4,58 +4,81 @@
   <meta charset="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bible Voice Recognition</title>
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
     #status {
       margin-top: 20px;
       font-size: 18px;
       color: blue;
     }
-    #output {
-      margin-top: 20px;
-      font-size: 16px;
+
+    .button {
+      border: none;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      display: inline-block;
+      font-size: 20px;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      cursor: pointer;
+      margin: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    .listening {
-      color: red;
-      font-weight: bold;
+
+    #startBtn {
+      background-color: #28a745;
     }
+
+    #stopBtn {
+      background-color: #dc3545;
+      display: none; /* Hidden by default */
+    }
+
     #micIcon {
       display: none;
       font-size: 30px;
       color: red;
+      margin-top: 20px;
     }
+
+    #output {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
     .checkmark {
       display: inline-block;
       color: green;
       margin-left: 10px;
       font-weight: bold;
     }
-    #stopBtn {
-      background-color: red;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      display: none; /* Hidden by default */
-    }
-    #startBtn {
-      background-color: green;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
   </style>
 </head>
 <body>
   <h1>Bible Voice Recognition</h1>
 
-  <button id="startBtn">Start Listening now</button>
-  <button id="stopBtn">Stop Listening</button>
-  
-  <p id="status">Click the start button to begin.</p>
+  <button id="startBtn" class="button">Start</button>
+  <button id="stopBtn" class="button">Stop</button>
+
   <div id="micIcon">🎤</div>
 
   <div id="output">
@@ -63,6 +86,8 @@
     <div>Chapter: <span id="chapter"></span> <span id="chapterCheck" class="checkmark">✔️</span></div>
     <div>Verse: <span id="verse"></span> <span id="verseCheck" class="checkmark">✔️</span></div>
   </div>
+
+  <p id="status">Click the start button to begin.</p>
   <p id="log"></p>
 
   <script>
@@ -113,14 +138,12 @@
     recognition.onstart = () => {
       micIcon.style.display = 'block';
       status.textContent = "Listening... please say a Bible reference.";
-      status.classList.add('listening');
     };
 
     // Hide mic icon when recording stops
     recognition.onspeechend = () => {
       micIcon.style.display = 'none';
       status.textContent = "Processing speech...";
-      status.classList.remove('listening');
     };
 
     // Process the speech result
@@ -166,7 +189,7 @@
       log.textContent = `Error: ${event.error}`;
     };
 
-    // Start speech recognition when the "Start Listening" button is clicked
+    // Start speech recognition when the "Start" button is clicked
     startBtn.addEventListener('click', () => {
       recognition.start();
       log.textContent = 'Listening continuously for Bible references...';
@@ -174,7 +197,7 @@
       stopBtn.style.display = 'block';  // Show stop button
     });
 
-    // Stop speech recognition when the "Stop Listening" button is clicked
+    // Stop speech recognition when the "Stop" button is clicked
     stopBtn.addEventListener('click', () => {
       recognition.stop();
       log.textContent = 'Stopped listening.';
