@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bible Voice Recognition</title>
+  <style>
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+      color: blue;
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    .listening {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bible Voice Recognition</h1>
+  
+  <button id="voiceBtn">Speak Bible Reference</button>
+  <p id="status">Click the button and say: "Genesis chapter 1 verse 1"</p>
+  <p id="output"></p>
+  <p id="log"></p>
+
+  <script>
+    const voiceBtn = document.getElementById('voiceBtn');
+    const output = document.getElementById('output');
+    const status = document.getElementById('status');
+    const log = document.getElementById('log');
+
+    // Check if browser supports speech recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+
+    // Start recording and show status
+    recognition.onstart = () => {
+      status.textContent = "Listening... please say the book, chapter, and verse.";
+      status.classList.add('listening');
+      log.textContent = "Recording started...";
+    };
+
+    // Stop recording and update status
+    recognition.onspeechend = () => {
+      status.textContent = "Processing...";
+      log.textContent = "Recording stopped. Processing speech...";
+      status.classList.remove('listening');
+    };
+
+    // Process the speech result
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      console.log('Recognized text:', transcript);
+      log.textContent = `Recognized speech: "${transcript}"`;
+
+      // Full regex pattern to capture "book chapter X verse Y"
+      const bibleRegex = /(genesis|exodus|leviticus|numbers|deuteronomy|joshua|judges|ruth|1 samuel|2 samuel|1 kings|2 kings|1 chronicles|2 chronicles|ezra|nehemiah|esther|job|psalms|proverbs|ecclesiastes|song of solomon|isaiah|jeremiah|lamentations|ezekiel|daniel|hosea|joel|amos|obadiah|jonah|micah|nahum|habakkuk|zephaniah|haggai|zechariah|malachi|matthew|mark|luke|john|acts|romans|1 corinthians|2 corinthians|galatians|ephesians|philippians|colossians|1 thessalonians|2 thessalonians|1 timothy|2 timothy|titus|philemon|hebrews|james|1 peter|2 peter|1 john|2 john|3 john|jude|revelation) chapter (\d+) verse (\d+)/;
+      
+      const match = transcript.match(bibleRegex);
+
+      if (match) {
+        const book = match[1];
+        const chapter = match[2];
+        const verse = match[3];
+        
+        // Log book, chapter, and verse to the console
+        console.log(`Book: ${book}, Chapter: ${chapter}, Verse: ${verse}`);
+        output.textContent = `Book: ${book}, Chapter: ${chapter}, Verse: ${verse}`;
+        log.textContent += " - Successfully matched Bible reference!";
+      } else {
+        output.textContent = "Could not recognize the Bible reference. Please try again.";
+        log.textContent += " - No match found. Please try again.";
+      }
+    };
+
+    // Handle errors during recognition
+    recognition.onerror = (event) => {
+      status.textContent = "Error occurred during recognition.";
+      log.textContent = `Error: ${event.error}`;
+    };
+
+    // Start speech recognition when button is clicked
+    voiceBtn.addEventListener('click', () => {
+      output.textContent = '';
+      log.textContent = '';
+      recognition.start();
+    });
+  </script>
+</body>
+</html>
