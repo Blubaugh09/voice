@@ -4,17 +4,129 @@
   <meta charset="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bible Voice Recognition</title>
   <style>
+
+
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
       margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f4f4f4;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* Old Testament on left, New Testament on right */
+      gap: 20px;
+    }
+
+    .book-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2 books per row */
+      gap: 10px;
+    }
+
+    .chapter-container {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr); /* 7 chapters per row */
+      gap: 10px;
+    }
+
+    .verse-container {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr); /* 10 verses per row */
+      gap: 10px;
+    }
+
+    .button {
+      padding: 12px;
+      text-align: center;
+      background-color: #e0e7ea;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      font-size: 15px;
+      border-radius: 5px;
+      color: #2d2d2d;
+    }
+
+    .button:hover {
+      background-color: #d6dee1;
+    }
+
+    .button:active {
+      background-color: #c6ced1;
+    }
+
+    .selected {
+      background-color: #a8c0c2;
+      color: #fff;
+    }
+
+    .greyed-out {
+      background-color: #ddd !important;
+      color: #777 !important;
+    }
+
+    /* Old Testament color */
+    .old-testament .button {
+      background-color: #9fbec2; /* Subtle blue for Old Testament */
+    }
+
+    /* New Testament color */
+    .new-testament .button {
+      background-color: #c7a59e; /* Subtle soft brown for New Testament */
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: repeat(2, 1fr); /* Keep 2 columns: Old Testament on the left, New Testament on the right */
+      }
+
+      .book-container {
+        grid-template-columns: repeat(2, 1fr); /* 2 books per row for both testaments */
+      }
+
+      .chapter-container {
+        grid-template-columns: repeat(4, 1fr); /* 4 chapters per row on mobile */
+      }
+
+      .verse-container {
+        grid-template-columns: repeat(5, 1fr); /* 5 verses per row on mobile */
+      }
+
+      .button {
+        font-size: 12px; /* Reduce font size for buttons on mobile */
+        padding: 8px;   /* Smaller padding for buttons on mobile */
+      }
+
+      h2 {
+        font-size: 18px; /* Smaller heading on mobile */
+      }
+    }
+
+    /* Very small mobile screens */
+    @media (max-width: 480px) {
+      .chapter-container {
+        grid-template-columns: repeat(3, 1fr); /* 3 chapters per row on very small screens */
+      }
+
+      .verse-container {
+        grid-template-columns: repeat(4, 1fr); /* 4 verses per row on very small screens */
+      }
+
+      .button {
+        font-size: 11px; /* Even smaller font size for buttons on very small screens */
+        padding: 6px;    /* Smaller padding for very small screens */
+      }
+
+      h2 {
+        font-size: 16px; /* Smaller heading for very small screens */
+      }
     }
 
     h1 {
@@ -53,12 +165,6 @@
       display: none; /* Hidden by default */
     }
 
-    #micIcon {
-      display: none;
-      font-size: 30px;
-      color: red;
-      margin-top: 20px;
-    }
 
     #output {
       margin-top: 20px;
@@ -79,7 +185,7 @@
   <button id="startBtn" class="button">Start</button>
   <button id="stopBtn" class="button">Stop</button>
 
-  <div id="micIcon">🎤</div>
+  
 
   <div id="output">
     <div>Book: <span id="book"></span> <span id="bookCheck" class="checkmark">✔️</span></div>
@@ -90,10 +196,24 @@
   <p id="status">Click the start button to begin.</p>
   <p id="log"></p>
 
+  <!-- Container for Books -->
+  <div class="container">
+    <!-- Old Testament Books -->
+    <div>
+      <h2>Old Testament</h2>
+      <div id="oldTestamentBooks" class="book-container old-testament"></div>
+    </div>
+
+    <!-- New Testament Books -->
+    <div>
+      <h2>New Testament</h2>
+      <div id="newTestamentBooks" class="book-container new-testament"></div>
+    </div>
+  </div>
   <script>
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
-    const micIcon = document.getElementById('micIcon');
+
     const output = document.getElementById('output');
     const status = document.getElementById('status');
     const log = document.getElementById('log');
@@ -134,17 +254,9 @@
     recognition.continuous = true;
     recognition.interimResults = false;
 
-    // Show mic icon when recording
-    recognition.onstart = () => {
-      micIcon.style.display = 'block';
-      status.textContent = "Listening... please say a Bible reference.";
-    };
 
-    // Hide mic icon when recording stops
-    recognition.onspeechend = () => {
-      micIcon.style.display = 'none';
-      status.textContent = "Processing speech...";
-    };
+
+
 
     // Process the speech result
     recognition.onresult = (event) => {
@@ -204,6 +316,219 @@
       stopBtn.style.display = 'none';   // Hide stop button
       startBtn.style.display = 'block'; // Show start button
     });
+
+    const bibleData = {
+      "Genesis": [31, 25, 24, 26, 32, 22, 24, 22, 29, 32, 32, 20, 18, 24, 21, 16, 27, 33, 38, 18, 34, 24, 20, 67, 34, 35, 46, 22, 35, 43, 55, 32, 20, 31, 29, 43, 36, 30, 23, 23, 57, 38, 34, 34, 28, 34, 31, 22, 33, 26],
+      "Exodus": [22, 25, 22, 31, 23, 30, 25, 32, 35, 29, 10, 51, 22, 31, 27, 36, 16, 27, 25, 26, 36, 31, 33, 18, 40, 37, 21, 43, 46, 38, 18, 35, 23, 35, 35, 38, 29, 31, 43, 38],
+      "Leviticus": [17, 16, 17, 35, 19, 30, 38, 36, 24, 20, 47, 8, 59, 57, 33, 34, 16, 30, 37, 27, 24, 33, 44, 23, 55, 46, 34],
+      "Numbers": [54, 34, 51, 49, 31, 27, 89, 26, 23, 36, 35, 16, 33, 45, 41, 50, 13, 32, 22, 29, 35, 41, 30, 25, 18, 65, 23, 31, 40, 16, 54, 42, 56, 29, 34, 13],
+      "Deuteronomy": [46, 37, 29, 49, 33, 25, 26, 20, 29, 22, 32, 32, 18, 29, 23, 22, 20, 22, 21, 20, 23, 30, 25, 22, 19, 19, 26, 68, 29, 20, 30, 52, 29, 12],
+      "Joshua": [18, 24, 17, 24, 15, 26, 27, 35, 27, 43, 23, 24, 33, 15, 63, 10, 18, 28, 51, 9, 45, 34, 16],
+      "Judges": [36, 23, 31, 24, 31, 40, 25, 35, 57, 18, 40, 15, 25, 20, 20, 31, 13, 31, 30, 48, 25],
+      "Ruth": [22, 23, 18, 22],
+      "1 Samuel": [28, 36, 21, 22, 12, 21, 17, 22, 27, 27, 15, 25, 23, 52, 35, 23, 58, 30, 24, 42, 15, 23, 29, 22, 44, 25, 12, 25, 11, 31, 13],
+      "2 Samuel": [27, 32, 39, 12, 25, 23, 29, 18, 13, 19, 27, 31, 39, 33, 37, 23, 29, 33, 43, 26, 22, 51, 39, 25],
+      "1 Kings": [53, 46, 28, 34, 18, 38, 51, 66, 28, 29, 43, 33, 34, 31, 34, 34, 24, 46, 21, 43, 29, 53],
+      "2 Kings": [18, 25, 27, 44, 27, 33, 20, 29, 37, 36, 21, 21, 25, 29, 38, 20, 41, 37, 37, 21, 26, 20, 37, 20, 30],
+      "1 Chronicles": [54, 55, 24, 43, 26, 81, 40, 40, 44, 14, 47, 40, 14, 17, 29, 43, 27, 17, 19, 8, 30, 19, 32, 31, 31, 32, 34, 21, 30],
+      "2 Chronicles": [17, 18, 17, 22, 14, 42, 22, 18, 31, 19, 23, 16, 22, 15, 19, 14, 19, 34, 11, 37, 20, 12, 21, 27, 28, 23, 9, 27, 36, 27, 21, 33, 25, 33, 27, 23],
+      "Ezra": [11, 70, 13, 24, 17, 22, 28, 36, 15, 44],
+      "Nehemiah": [11, 20, 32, 23, 19, 19, 73, 18, 38, 39, 36, 47, 31],
+      "Esther": [22, 23, 15, 17, 14, 14, 10, 17, 32, 3],
+      "Job": [22, 13, 26, 21, 27, 30, 21, 22, 35, 22, 20, 25, 28, 22, 35, 22, 16, 21, 29, 29, 34, 30, 17, 25, 6, 14, 23, 28, 25, 31, 40, 22, 33, 37, 16, 33, 24, 41, 30, 24, 34, 17],
+      "Psalms": [6, 12, 8, 8, 12, 10, 17, 9, 20, 18, 7, 8, 6, 7, 5, 11, 15, 50, 14, 9, 13, 31, 6, 10, 22, 12, 14, 9, 11, 12, 24, 11, 22, 22, 28, 12, 40, 22, 13, 17, 13, 11, 5, 26, 17, 11, 9, 14, 20, 23, 19, 9, 6, 7, 23, 13, 11, 13, 17, 12, 8, 12, 11, 10, 13, 20, 7, 35, 36, 5, 24, 20, 28, 23, 10, 12, 16, 15, 20, 9, 13, 16, 33, 18, 22, 28, 12, 18, 29, 10, 22, 14, 9, 11, 9, 15, 23, 21, 18, 19, 2, 29, 176, 7, 8, 9, 4, 8, 5, 6, 5, 6, 8, 8, 3, 18, 3, 3, 21, 26, 9, 8, 24, 14, 10, 10, 9, 8, 18, 19, 2, 29, 176, 7],
+      "Proverbs": [33, 22, 35, 27, 23, 35, 27, 36, 18, 32, 31, 28, 25, 35, 33, 33, 28, 24, 29, 30, 31, 29, 35, 34, 28, 28, 27, 28, 27, 33, 31],
+"Ecclesiastes": [18, 26, 22, 16, 20, 12, 29, 17, 18, 20, 10, 14],
+"Song of Solomon": [17, 17, 11, 16, 16, 13, 13, 14],
+"Isaiah": [31, 22, 26, 6, 30, 13, 25, 22, 21, 34, 16, 6, 22, 32, 9, 14, 14, 7, 25, 6, 17, 25, 18, 23, 12, 21, 13, 29, 24, 33, 9, 20, 24, 17, 10, 22, 38, 22, 8, 31, 29, 25, 28, 28, 25, 13, 15, 22, 26, 11, 23, 15, 12, 17, 13, 12, 21, 14, 21, 22, 11, 12, 19, 12, 25, 24, 23, 10, 13, 11, 12, 9, 25, 24],
+"Jeremiah": [19, 37, 25, 31, 31, 30, 34, 22, 26, 25, 23, 17, 27, 22, 21, 21, 27, 23, 15, 18, 14, 30, 40, 10, 38, 24, 22, 17, 32, 24, 40, 44, 26, 22, 19, 32, 21, 28, 18, 16, 18, 22, 13, 30, 5, 28, 7, 47, 39, 46, 64, 34],
+"Lamentations": [22, 22, 66, 22, 22],
+"Ezekiel": [28, 10, 27, 17, 17, 14, 27, 18, 11, 22, 25, 28, 23, 23, 8, 63, 24, 32, 14, 49, 32, 31, 49, 27, 17, 21, 36, 26, 21, 26, 18, 32, 33, 31, 15, 38, 28, 23, 29, 49, 26, 20, 27, 31, 25, 24, 23, 35],
+"Daniel": [21, 49, 30, 37, 31, 28, 28, 27, 27, 21, 45, 13],
+"Hosea": [11, 23, 5, 19, 15, 11, 16, 14, 17, 15, 12, 14, 16, 9],
+"Joel": [20, 32, 21],
+"Amos": [15, 16, 15, 13, 27, 14, 17, 14, 15],
+"Obadiah": [21],
+"Jonah": [17, 10, 10, 11],
+"Micah": [16, 13, 12, 13, 15, 16, 20],
+"Nahum": [15, 13, 19],
+"Habakkuk": [17, 20, 19],
+"Zephaniah": [18, 15, 20],
+"Haggai": [15, 23],
+"Zechariah": [21, 13, 10, 14, 11, 15, 14, 23, 17, 12, 17, 14, 9, 21],
+"Malachi": [14, 17, 18, 6],
+"Matthew": [25, 23, 17, 25, 48, 34, 29, 34, 38, 42, 30, 50, 58, 36, 39, 28, 27, 35, 30, 34, 46, 46, 39, 51, 46, 75, 66, 20],
+"Mark": [45, 28, 35, 41, 43, 56, 37, 38, 50, 52, 33, 44, 37, 72, 47, 20],
+"Luke": [80, 52, 38, 44, 39, 49, 50, 56, 62, 42, 54, 59, 35, 35, 32, 31, 37, 43, 48, 47, 38, 71, 56, 53],
+"John": [51, 25, 36, 54, 47, 71, 53, 59, 41, 42, 57, 50, 38, 31, 27, 33, 26, 40, 42, 31, 25],
+"Acts": [26, 47, 26, 37, 42, 15, 60, 40, 43, 48, 30, 25, 52, 28, 41, 40, 34, 28, 41, 38, 40, 30, 35, 27, 27, 32, 44, 31],
+"Romans": [32, 29, 31, 25, 21, 23, 25, 39, 33, 21, 36, 21, 14, 23, 33, 27],
+"1 Corinthians": [31, 16, 23, 21, 13, 20, 40, 13, 27, 33, 34, 31, 13, 40, 58, 24],
+"2 Corinthians": [24, 17, 18, 18, 21, 18, 16, 24, 15, 18, 33, 21, 14],
+"Galatians": [24, 21, 29, 31, 26, 18],
+"Ephesians": [23, 22, 21, 32, 33, 24],
+"Philippians": [30, 30, 21, 23],
+"Colossians": [29, 23, 25, 18],
+"1 Thessalonians": [10, 20, 13, 18, 28],
+"2 Thessalonians": [12, 17, 18],
+"1 Timothy": [20, 15, 16, 16, 25, 21],
+"2 Timothy": [18, 26, 17, 22],
+"Titus": [16, 15, 15],
+"Philemon": [25],
+"Hebrews": [14, 18, 19, 16, 14, 20, 28, 13, 28, 39, 40, 29, 25],
+"James": [27, 26, 18, 17, 20],
+"1 Peter": [25, 25, 22, 19, 14],
+"2 Peter": [21, 22, 18],
+"1 John": [10, 29, 24, 21, 21],
+"2 John": [13],
+"3 John": [14],
+"Jude": [25],
+"Revelation": [20, 29, 22, 11, 14, 17, 17, 13, 21, 11, 19, 18, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21]
+
+
+    };
+    
+    const oldTestamentBooks = Object.keys(bibleData).slice(0, 39); // Add all Old Testament books here
+    const newTestamentBooks = Object.keys(bibleData).slice(39); // Add all New Testament books here
+
+    let selectedBookIndex = -1;  // Track which book is selected
+    let selectedChapterIndex = -1; // Track which chapter is selected
+    let isOldTestament = true;   // Track whether the selected book is from the Old Testament
+    let lastInsertedRow = null;  // Keep track of where the chapter rows are inserted
+    let lastInsertedVerseRow = null;  // Keep track of where the verse rows are inserted
+    let selectedBookTitle = '';  // Store the original book title
+
+    // Generate book buttons dynamically
+    function generateBookButtons() {
+      const oldTestamentContainer = document.getElementById('oldTestamentBooks');
+      const newTestamentContainer = document.getElementById('newTestamentBooks');
+
+      oldTestamentBooks.forEach((book, index) => {
+        const bookButton = document.createElement('div');
+        bookButton.className = 'button';
+        bookButton.textContent = book;
+        bookButton.id = `oldTestament-${index}`;
+        bookButton.onclick = () => selectBook(index, true);
+        oldTestamentContainer.appendChild(bookButton);
+      });
+
+      newTestamentBooks.forEach((book, index) => {
+        const bookButton = document.createElement('div');
+        bookButton.className = 'button';
+        bookButton.textContent = book;
+        bookButton.id = `newTestament-${index}`;
+        bookButton.onclick = () => selectBook(index, false);
+        newTestamentContainer.appendChild(bookButton);
+      });
+    }
+
+    // Handle book selection and insert chapters directly below selected book row
+    function selectBook(bookIndex, fromOldTestament) {
+      const container = fromOldTestament
+        ? document.getElementById('oldTestamentBooks')
+        : document.getElementById('newTestamentBooks');
+
+      const selectedBook = fromOldTestament
+        ? oldTestamentBooks[bookIndex]
+        : newTestamentBooks[bookIndex];
+
+      // Remove highlight from the previously selected book and grey out all other books
+      const oldTestamentButtons = document.querySelectorAll('#oldTestamentBooks .button');
+      const newTestamentButtons = document.querySelectorAll('#newTestamentBooks .button');
+
+      oldTestamentButtons.forEach(button => button.classList.add('greyed-out'));
+      newTestamentButtons.forEach(button => button.classList.add('greyed-out'));
+
+      if (selectedBookIndex !== -1) {
+        const previousBookButton = isOldTestament
+          ? document.getElementById(`oldTestament-${selectedBookIndex}`)
+          : document.getElementById(`newTestament-${selectedBookIndex}`);
+        previousBookButton.classList.remove('selected');
+
+        // Reset book title to its original value (remove appended chapter)
+        previousBookButton.textContent = selectedBookTitle;
+      }
+
+      // Highlight the selected book and remove greyed-out effect
+      selectedBookIndex = bookIndex;
+      isOldTestament = fromOldTestament;
+      const selectedBookButton = fromOldTestament
+        ? document.getElementById(`oldTestament-${bookIndex}`)
+        : document.getElementById(`newTestament-${bookIndex}`);
+      selectedBookButton.classList.add('selected');
+      selectedBookButton.classList.remove('greyed-out');
+
+      // Store the original book title
+      selectedBookTitle = selectedBookButton.textContent;
+
+      // Remove any previously inserted chapter or verse rows
+      if (lastInsertedRow) {
+        lastInsertedRow.remove();
+      }
+      if (lastInsertedVerseRow) {
+        lastInsertedVerseRow.remove();
+      }
+
+      // Create a new chapter row to insert
+      const chapterContainer = document.createElement('div');
+      chapterContainer.className = 'chapter-container';
+
+      const chapters = bibleData[selectedBook]; // Get the number of verses in each chapter
+      chapters.forEach((_, chapterIndex) => {
+        const chapterButton = document.createElement('div');
+        chapterButton.className = 'button';
+        chapterButton.textContent = chapterIndex + 1; // Display chapter numbers starting from 1
+        chapterButton.onclick = () => selectChapter(chapterIndex + 1, chapters[chapterIndex]);
+        chapterContainer.appendChild(chapterButton);
+      });
+
+      // Insert the chapter row directly after the selected book
+      const selectedBookElement = document.getElementById(`${isOldTestament ? 'oldTestament' : 'newTestament'}-${bookIndex}`);
+      selectedBookElement.insertAdjacentElement('afterend', chapterContainer);
+      lastInsertedRow = chapterContainer;  // Track the last inserted chapter row
+    }
+
+    // Handle chapter selection and insert verses directly below selected chapter row
+    function selectChapter(chapterIndex, numberOfVerses) {
+      const selectedBookButton = document.getElementById(`${isOldTestament ? 'oldTestament' : 'newTestament'}-${selectedBookIndex}`);
+
+      // Update the selectedChapterIndex
+      selectedChapterIndex = chapterIndex;
+
+      // Append the selected chapter number to the book name
+      selectedBookButton.textContent = `${selectedBookTitle} ${chapterIndex}`;
+
+      // Remove the chapter buttons and display verse buttons
+      if (lastInsertedRow) {
+        lastInsertedRow.remove();
+      }
+
+      // Create a new verse row to insert
+      const verseContainer = document.createElement('div');
+      verseContainer.className = 'verse-container';
+
+      const verses = Array.from({ length: numberOfVerses }, (_, i) => i + 1); // Generate verse numbers based on number of verses
+      verses.forEach(verse => {
+        const verseButton = document.createElement('div');
+        verseButton.className = 'button';
+        verseButton.textContent = verse;
+        verseButton.onclick = () => selectVerse(verse);
+        verseContainer.appendChild(verseButton);
+      });
+
+      // Insert the verse row directly after the selected book with the appended chapter
+      selectedBookButton.insertAdjacentElement('afterend', verseContainer);
+      lastInsertedVerseRow = verseContainer;  // Track the last inserted verse row
+    }
+
+    // Handle verse selection (show full reference)
+    function selectVerse(verse) {
+      const bookName = isOldTestament ? oldTestamentBooks[selectedBookIndex] : newTestamentBooks[selectedBookIndex];
+      alert(`Selected: ${bookName} Chapter ${selectedChapterIndex}, Verse ${verse}`);
+    }
+
+    // Initial load
+    generateBookButtons();
   </script>
 </body>
 </html>
